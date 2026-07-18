@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8000";
+const API_BASE = "https://dsa-tutor-e9da.onrender.com";
 
 // ---------- Auth guard ----------
 const AUTH_TOKEN = localStorage.getItem("dsa_token");
