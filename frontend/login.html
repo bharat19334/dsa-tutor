@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Visual Tutor — Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="auth.css">
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-prompt">&gt;_</span>
+    <span class="brand-name">dsa<span class="brand-accent">.tutor</span></span>
+  </div>
+</header>
+
+<main class="auth-wrap">
+  <section class="panel auth-panel">
+    <div class="auth-tabs">
+      <button id="tabLogin" class="auth-tab active">login</button>
+      <button id="tabSignup" class="auth-tab">signup</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <form id="loginForm" class="auth-form">
+      <label class="auth-label">email</label>
+      <input type="email" id="loginEmail" class="auth-input" placeholder="you@example.com" required>
+
+      <label class="auth-label">password</label>
+      <input type="password" id="loginPassword" class="auth-input" placeholder="••••••••" required>
+
+      <button type="submit" class="btn-run">
+        <span class="btn-run-text">login</span>
+        <span class="btn-run-key">⏎</span>
+      </button>
+    </form>
+
+    <!-- SIGNUP FORM -->
+    <form id="signupForm" class="auth-form hidden">
+      <label class="auth-label">name</label>
+      <input type="text" id="signupName" class="auth-input" placeholder="Bharat Goswami" required>
+
+      <label class="auth-label">email</label>
+      <input type="email" id="signupEmail" class="auth-input" placeholder="you@example.com" required>
+
+      <label class="auth-label">password</label>
+      <input type="password" id="signupPassword" class="auth-input" placeholder="min 6 characters" required minlength="6">
+
+      <button type="submit" class="btn-run">
+        <span class="btn-run-text">create account</span>
+        <span class="btn-run-key">⏎</span>
+      </button>
+    </form>
+
+    <div id="authError" class="error-box hidden"></div>
+  </section>
+</main>
+
+<script src="auth.js"></script>
+</body>
+</html>

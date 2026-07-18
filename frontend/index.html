@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Visual Tutor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-prompt">&gt;_</span>
+    <span class="brand-name">dsa<span class="brand-accent">.tutor</span></span>
+  </div>
+  <div class="topbar-status" id="apiStatus">
+    <span class="dot dot-idle"></span> waiting for input
+  </div>
+  <div class="topbar-user">
+    <span id="userGreeting" class="user-greeting"></span>
+    <button id="logoutBtn" class="btn-step">logout</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="panel input-panel">
+    <div class="panel-label">01 — ASK</div>
+    <textarea id="questionInput" placeholder="Paste a DSA question... e.g. 'Given an array of integers, find two numbers that add up to a target.'"></textarea>
+    <button id="runBtn" class="btn-run">
+      <span class="btn-run-text">run tutor</span>
+      <span class="btn-run-key">⏎</span>
+    </button>
+  </section>
+
+  <section class="panel explain-panel hidden" id="explainPanel">
+    <div class="panel-label-row">
+      <div class="panel-label">02 — UNDERSTAND</div>
+      <button id="listenBtn" class="btn-listen" title="listen to explanation">
+        <span id="listenIcon">🔊</span> <span id="listenText">listen</span>
+      </button>
+    </div>
+    <p id="explanationText" class="explanation-text"></p>
+  </section>
+
+  <section class="panel approaches-panel hidden" id="approachesPanel">
+    <div class="panel-label">03 — COMPARE APPROACHES</div>
+    <div id="approachesList" class="approaches-list"></div>
+  </section>
+
+  <section class="panel dryrun-panel hidden" id="dryrunPanel">
+    <div class="panel-label">04 — DRY RUN</div>
+    <div class="dryrun-header">
+      <span id="dryrunApproachName" class="dryrun-approach-name"></span>
+      <div class="dryrun-controls">
+        <button id="prevStep" class="btn-step" title="previous step">◀</button>
+        <span id="stepCounter" class="step-counter">0 / 0</span>
+        <button id="nextStep" class="btn-step" title="next step">▶</button>
+        <button id="playStep" class="btn-step btn-play" title="autoplay">▶ auto</button>
+        <select id="speedSelect" class="speed-select" title="playback speed">
+          <option value="1800">0.5x</option>
+          <option value="1100" selected>1x</option>
+          <option value="600">1.5x</option>
+          <option value="300">2x</option>
+        </select>
+        <label class="narrate-toggle" title="narrate each step aloud">
+          <input type="checkbox" id="narrateToggle"> 🔊 narrate
+        </label>
+      </div>
+    </div>
+    <div id="arrayStage" class="array-stage"></div>
+    <div id="pointerRow" class="pointer-row"></div>
+    <div id="actionLine" class="action-line">// waiting for first step</div>
+  </section>
+
+  <div id="loader" class="loader hidden">
+    <span class="loader-text" id="loaderText">compiling explanation...</span>
+  </div>
+
+  <div id="errorBox" class="error-box hidden"></div>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
