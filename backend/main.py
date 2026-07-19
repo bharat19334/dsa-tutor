@@ -16,6 +16,7 @@ import json
 import re
 from typing import List, Optional
 
+import httpx
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -30,6 +31,16 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 MODEL_NAME = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+
+PISTON_URL = "https://emkc.org/api/v2/piston"
+LANGUAGE_MAP = {
+    "Python": "python",
+    "C++": "cpp",
+    "Java": "java",
+    "JavaScript": "javascript",
+}
+FILE_EXTENSIONS = {"python": "main.py", "cpp": "main.cpp", "java": "Main.java", "javascript": "main.js"}
+_piston_runtime_cache: dict = {}
 
 app = FastAPI(title="DSA Visual Tutor API")
 
@@ -77,6 +88,12 @@ class QuestionRequest(BaseModel):
 class DryRunRequest(BaseModel):
     question: str
     approach: str
+
+
+class RunCodeRequest(BaseModel):
+    code: str
+    language: str = "Python"
+    stdin: Optional[str] = ""
 
 
 # ---------- Helper: call Groq & force clean JSON ----------
@@ -177,6 +194,50 @@ def dry_run(req: DryRunRequest, current_user: dict = Depends(auth.get_current_us
     except Exception:
         raise HTTPException(status_code=502, detail="LLM returned invalid JSON. Try again.")
     return trace
+
+
+async def get_piston_version(language_id: str) -> str:
+    """Piston needs an exact runtime version per language; fetch + cache it."""
+    if language_id in _piston_runtime_cache:
+        return _piston_runtime_cache[language_id]
+    async with httpx.AsyncClient(timeout=10) as http_client:
+        res = await http_client.get(f"{PISTON_URL}/runtimes")
+        res.raise_for_status()
+        runtimes = res.json()
+    for rt in runtimes:
+        if rt["language"] == language_id:
+            _piston_runtime_cache[language_id] = rt["version"]
+            return rt["version"]
+    raise HTTPException(status_code=400, detail=f"Unsupported language: {language_id}")
+
+
+@app.post("/api/run-code")
+async def run_code(req: RunCodeRequest, current_user: dict = Depends(auth.get_current_user)):
+    language_id = LANGUAGE_MAP.get(req.language, "python")
+    version = await get_piston_version(language_id)
+
+    payload = {
+        "language": language_id,
+        "version": version,
+        "files": [{"name": FILE_EXTENSIONS.get(language_id, "main.txt"), "content": req.code}],
+        "stdin": req.stdin or "",
+    }
+    async with httpx.AsyncClient(timeout=20) as http_client:
+        res = await http_client.post(f"{PISTON_URL}/execute", json=payload)
+    if res.status_code != 200:
+        raise HTTPException(status_code=502, detail="Code execution service error. Try again.")
+
+    result = res.json()
+    run = result.get("run", {})
+    compile_step = result.get("compile", {})
+    return {
+        "stdout": run.get("stdout", ""),
+        "stderr": run.get("stderr", ""),
+        "compile_output": compile_step.get("stderr", "") if compile_step else "",
+        "exit_code": run.get("code"),
+        "language": language_id,
+        "version": version,
+    }
 
 
 if __name__ == "__main__":
