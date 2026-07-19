@@ -90,6 +90,38 @@
     <div id="actionLine" class="action-line">// waiting for first step</div>
   </section>
 
+  <section class="panel compiler-panel">
+    <div class="panel-label-row">
+      <div class="panel-label">05 — CODE &amp; RUN (COMPILER)</div>
+      <select id="codeLangSelect" class="speed-select">
+        <option value="Python">Python</option>
+        <option value="C++">C++</option>
+        <option value="Java">Java</option>
+        <option value="JavaScript">JavaScript</option>
+      </select>
+    </div>
+    <textarea id="codeEditor" class="code-editor" spellcheck="false" placeholder="// write your code here...">print("Hello, DSA!")</textarea>
+
+    <div class="stdin-row">
+      <label class="stdin-label" for="stdinInput">stdin (optional input)</label>
+      <textarea id="stdinInput" class="stdin-editor" spellcheck="false" placeholder="input values here, one per line if needed..."></textarea>
+    </div>
+
+    <button id="runCodeBtn" class="btn-run">
+      <span class="btn-run-text">▶ run code</span>
+      <span class="btn-run-key">⏎</span>
+    </button>
+
+    <div id="codeOutput" class="code-output hidden">
+      <div class="output-header">
+        <span id="outputStatus" class="output-status"></span>
+        <span id="outputMeta" class="output-meta"></span>
+      </div>
+      <pre id="outputStdout" class="output-block"></pre>
+      <pre id="outputStderr" class="output-block output-error hidden"></pre>
+    </div>
+  </section>
+
   <div id="loader" class="loader hidden">
     <span class="loader-text" id="loaderText">compiling explanation...</span>
   </div>

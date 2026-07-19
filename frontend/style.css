@@ -710,3 +710,94 @@ body {
 }
 .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
 .theme-toggle .icon { font-size: 13px; }
+/* ================= Compiler / Code Runner ================= */
+
+.compiler-panel .panel-label-row { margin-bottom: 12px; }
+
+.code-editor {
+  width: 100%;
+  min-height: 200px;
+  background: var(--bar);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.6;
+  padding: 14px;
+  resize: vertical;
+  tab-size: 4;
+}
+.code-editor:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+
+.stdin-row { margin-top: 14px; }
+
+.stdin-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.stdin-editor {
+  width: 100%;
+  min-height: 60px;
+  background: var(--bar);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+.stdin-editor:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+
+.compiler-panel .btn-run { margin-top: 14px; }
+
+.code-output {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--panel-border);
+}
+
+.output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.output-status {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 5px;
+}
+.output-status.success { background: rgba(74,222,128,0.15); color: var(--good); }
+.output-status.fail { background: rgba(248,113,113,0.15); color: var(--bad); }
+
+.output-meta {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+
+.output-block {
+  background: var(--bar);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0 0 10px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.output-block.output-error { color: var(--bad); border-color: rgba(248,113,113,0.35); }
