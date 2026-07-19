@@ -3,6 +3,5 @@ uvicorn[standard]
 groq
 python-dotenv
 pydantic[email]
-passlib[bcrypt]
+bcrypt
 python-jose[cryptography]
- 

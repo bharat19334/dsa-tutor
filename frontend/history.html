@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>History — DSA Visual Tutor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="theme.js"></script>
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand brand">
+      <span class="brand-prompt">&gt;_</span>
+      <span class="brand-name">dsa<span class="brand-accent">.tutor</span></span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sidebar-link"><span class="num">01</span> Dashboard</a>
+      <a href="practice.html" class="sidebar-link"><span class="num">02</span> Practice <span class="soon">soon</span></a>
+      <a href="progress.html" class="sidebar-link"><span class="num">03</span> Progress <span class="soon">soon</span></a>
+      <a href="history.html" class="sidebar-link active"><span class="num">04</span> History <span class="soon">soon</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="theme-toggle"></button>
+      <span id="userGreeting" class="user-greeting"></span>
+      <button id="logoutBtn" class="btn-step">logout</button>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="topbar topbar-slim">
+      <div class="topbar-status"><span class="dot dot-idle"></span> history</div>
+    </header>
+
+    <main class="wrap">
+      <section class="panel coming-soon">
+        <div class="cs-icon">◆</div>
+        <h2>Question history is on its way</h2>
+        <p>Every question you've asked and every dry run you've watched, saved and searchable — coming in the next update.</p>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script src="stub.js"></script>
+</body>
+</html>

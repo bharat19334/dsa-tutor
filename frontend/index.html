@@ -3,88 +3,141 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DSA Visual Tutor</title>
+<title>DSA Visual Tutor — learn algorithms by watching them run</title>
+<meta name="description" content="Paste any DSA question and get a plain-language explanation, a brute-force-to-optimal approach comparison, and a step-by-step animated dry run.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="theme.js"></script>
 </head>
 <body>
 
 <div class="scanline"></div>
 
-<header class="topbar">
+<header class="landing-nav">
   <div class="brand">
     <span class="brand-prompt">&gt;_</span>
     <span class="brand-name">dsa<span class="brand-accent">.tutor</span></span>
   </div>
-  <div class="topbar-status" id="apiStatus">
-    <span class="dot dot-idle"></span> waiting for input
-  </div>
-  <div class="topbar-user">
-    <span id="userGreeting" class="user-greeting"></span>
-    <button id="logoutBtn" class="btn-step">logout</button>
+  <div class="landing-nav-links">
+    <a href="#how-it-works" class="text-link">how it works</a>
+    <a href="#features" class="text-link">features</a>
+    <button class="theme-toggle"></button>
+    <a href="login.html" class="btn-ghost">log in</a>
+    <a href="login.html#signup" class="btn-solid">sign up free</a>
   </div>
 </header>
 
-<main class="wrap">
+<main>
 
-  <section class="panel input-panel">
-    <div class="panel-label">01 — ASK</div>
-    <textarea id="questionInput" placeholder="Paste a DSA question... e.g. 'Given an array of integers, find two numbers that add up to a target.'"></textarea>
-    <button id="runBtn" class="btn-run">
-      <span class="btn-run-text">run tutor</span>
-      <span class="btn-run-key">⏎</span>
-    </button>
-  </section>
-
-  <section class="panel explain-panel hidden" id="explainPanel">
-    <div class="panel-label-row">
-      <div class="panel-label">02 — UNDERSTAND</div>
-      <button id="listenBtn" class="btn-listen" title="listen to explanation">
-        <span id="listenIcon">🔊</span> <span id="listenText">listen</span>
-      </button>
+  <section class="hero">
+    <div class="hero-eyebrow">FOR STUDENTS PREPPING FOR PLACEMENTS</div>
+    <h1>Paste a DSA question.<br>Watch it get <span class="accent">solved</span> — step by step.</h1>
+    <p class="sub">No more memorizing solutions you don't understand. Get a plain-language explanation, compare every approach from brute force to optimal, then watch the algorithm actually run on a sample array.</p>
+    <div class="hero-ctas">
+      <a href="login.html#signup" class="btn-solid">sign up free</a>
+      <a href="#how-it-works" class="btn-ghost">see how it works</a>
     </div>
-    <p id="explanationText" class="explanation-text"></p>
-  </section>
 
-  <section class="panel approaches-panel hidden" id="approachesPanel">
-    <div class="panel-label">03 — COMPARE APPROACHES</div>
-    <div id="approachesList" class="approaches-list"></div>
-  </section>
-
-  <section class="panel dryrun-panel hidden" id="dryrunPanel">
-    <div class="panel-label">04 — DRY RUN</div>
-    <div class="dryrun-header">
-      <span id="dryrunApproachName" class="dryrun-approach-name"></span>
-      <div class="dryrun-controls">
-        <button id="prevStep" class="btn-step" title="previous step">◀</button>
-        <span id="stepCounter" class="step-counter">0 / 0</span>
-        <button id="nextStep" class="btn-step" title="next step">▶</button>
-        <button id="playStep" class="btn-step btn-play" title="autoplay">▶ auto</button>
-        <select id="speedSelect" class="speed-select" title="playback speed">
-          <option value="1800">0.5x</option>
-          <option value="1100" selected>1x</option>
-          <option value="600">1.5x</option>
-          <option value="300">2x</option>
-        </select>
-        <label class="narrate-toggle" title="narrate each step aloud">
-          <input type="checkbox" id="narrateToggle"> 🔊 narrate
-        </label>
+    <div class="hero-demo">
+      <div class="demo-step">
+        <span class="demo-num">01</span><span class="demo-label">ASK</span>
+        <span class="demo-desc">paste any DSA question</span>
+      </div>
+      <div class="demo-connector"></div>
+      <div class="demo-step">
+        <span class="demo-num">02</span><span class="demo-label">UNDERSTAND</span>
+        <span class="demo-desc">plain-language explanation</span>
+      </div>
+      <div class="demo-connector"></div>
+      <div class="demo-step">
+        <span class="demo-num">03</span><span class="demo-label">COMPARE</span>
+        <span class="demo-desc">brute force → optimal</span>
+      </div>
+      <div class="demo-connector"></div>
+      <div class="demo-step highlight">
+        <span class="demo-num">04</span><span class="demo-label">DRY RUN</span>
+        <span class="demo-desc">watch it execute, live</span>
       </div>
     </div>
-    <div id="arrayStage" class="array-stage"></div>
-    <div id="pointerRow" class="pointer-row"></div>
-    <div id="actionLine" class="action-line">// waiting for first step</div>
   </section>
 
-  <div id="loader" class="loader hidden">
-    <span class="loader-text" id="loaderText">compiling explanation...</span>
-  </div>
+  <section class="features" id="features">
+    <div class="section-label">WHAT YOU GET</div>
+    <h2 class="section-title">Everything except the answer key</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="f-icon">01</div>
+        <h3>Plain-language explanations</h3>
+        <p>Every problem broken into what it's really asking, a real-world analogy, and the edge cases you'd miss otherwise.</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon">02</div>
+        <h3>Approach comparison</h3>
+        <p>See brute force through optimal side by side — time complexity, space complexity, and the reasoning behind each.</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon">03</div>
+        <h3>Step-by-step dry run</h3>
+        <p>Watch the array update, pointers move, and swaps happen — one step at a time, at whatever speed you choose.</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon">04</div>
+        <h3>Voice narration</h3>
+        <p>Turn on narration and hear each step read aloud while you watch it animate — hands-free revision.</p>
+      </div>
+    </div>
+  </section>
 
-  <div id="errorBox" class="error-box hidden"></div>
+  <section class="how-it-works" id="how-it-works">
+    <div class="section-label">THE FLOW</div>
+    <h2 class="section-title">How it works</h2>
+    <div class="how-steps">
+      <div class="how-step">
+        <span class="how-step-num">01</span>
+        <div>
+          <h3>Paste your question</h3>
+          <p>Drop in any DSA problem — from an array question to a graph traversal. No formatting needed.</p>
+        </div>
+      </div>
+      <div class="how-step">
+        <span class="how-step-num">02</span>
+        <div>
+          <h3>Get the explanation</h3>
+          <p>A plain-language breakdown of what's being asked, with an analogy and the constraints to watch for.</p>
+        </div>
+      </div>
+      <div class="how-step">
+        <span class="how-step-num">03</span>
+        <div>
+          <h3>Compare approaches</h3>
+          <p>Two to four approaches, ordered brute force to optimal, each with complexity and the reasoning for why it is or isn't the best fit.</p>
+        </div>
+      </div>
+      <div class="how-step">
+        <span class="how-step-num">04</span>
+        <div>
+          <h3>Watch the dry run</h3>
+          <p>Pick an approach and watch it execute on a small sample — step forward, autoplay, or slow it down until it clicks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <h2>Stop memorizing. Start understanding.</h2>
+    <a href="login.html#signup" class="btn-solid">sign up free</a>
+  </section>
 
 </main>
 
-<script src="script.js"></script>
+<footer class="landing-footer">
+  <div class="brand">
+    <span class="brand-prompt">&gt;_</span>
+    <span class="brand-name">dsa<span class="brand-accent">.tutor</span></span>
+  </div>
+  <span>Built for students prepping for placements.</span>
+</footer>
+
 </body>
 </html>

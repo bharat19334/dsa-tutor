@@ -1,4 +1,7 @@
-const API_BASE = "https://dsa-tutor-e9da.onrender.com";
+const API_BASE =
+  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8000"
+    : "https://YOUR-BACKEND-URL.onrender.com"; // <-- replace after deploying backend on Render
 
 const tabLogin = document.getElementById("tabLogin");
 const tabSignup = document.getElementById("tabSignup");
@@ -8,11 +11,16 @@ const authError = document.getElementById("authError");
 
 // If already logged in, skip straight to the app
 if (localStorage.getItem("dsa_token")) {
-  window.location.href = "index.html";
+  window.location.href = "dashboard.html";
 }
 
 tabLogin.addEventListener("click", () => switchTab("login"));
 tabSignup.addEventListener("click", () => switchTab("signup"));
+
+// Open straight to the signup tab if linked here with #signup (e.g. from the landing page)
+if (window.location.hash === "#signup") {
+  switchTab("signup");
+}
 
 function switchTab(which) {
   hideError();
@@ -77,5 +85,5 @@ function saveSessionAndRedirect(data) {
   localStorage.setItem("dsa_token", data.access_token);
   localStorage.setItem("dsa_user_name", data.name);
   localStorage.setItem("dsa_user_email", data.email);
-  window.location.href = "index.html";
+  window.location.href = "dashboard.html";
 }

@@ -1,0 +1,16 @@
+# Python
+backend/__pycache__/
+backend/*.pyc
+backend/venv/
+backend/.venv/
+
+# Secrets
+backend/.env
+.env
+
+# Database (SQLite)
+backend/users.db
+
+# OS/editor
+.DS_Store
+.vscode/
