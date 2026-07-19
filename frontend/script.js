@@ -1,7 +1,7 @@
 const API_BASE =
   window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:8000"
-    : "https://YOUR-BACKEND-URL.onrender.com"; // <-- replace after deploying backend on Render
+    : "https://dsa-tutor-e9da.onrender.com"; // <-- replace after deploying backend on Render
 
 // ---------- Auth guard ----------
 const AUTH_TOKEN = localStorage.getItem("dsa_token");
