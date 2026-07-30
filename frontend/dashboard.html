@@ -54,9 +54,16 @@
   <section class="panel explain-panel hidden" id="explainPanel">
     <div class="panel-label-row">
       <div class="panel-label">02 — UNDERSTAND</div>
-      <button id="listenBtn" class="btn-listen" title="listen to explanation">
-        <span id="listenIcon">🔊</span> <span id="listenText">listen</span>
-      </button>
+      <div class="listen-controls">
+        <div class="translate-group" id="translateGroup" role="group" aria-label="translate content">
+          <button class="translate-btn active" data-lang="english">EN</button>
+          <button class="translate-btn" data-lang="hinglish">Hinglish</button>
+          <button class="translate-btn" data-lang="hindi">हिंदी</button>
+        </div>
+        <button id="listenBtn" class="btn-listen" title="listen to explanation">
+          <span id="listenIcon">🔊</span> <span id="listenText">listen</span>
+        </button>
+      </div>
     </div>
     <p id="explanationText" class="explanation-text"></p>
   </section>
@@ -84,6 +91,10 @@
         <label class="narrate-toggle" title="narrate each step aloud">
           <input type="checkbox" id="narrateToggle"> 🔊 narrate
         </label>
+        <select id="narrateLangSelect" class="speed-select" title="narration language">
+          <option value="english">English</option>
+          <option value="hinglish">Hinglish</option>
+        </select>
       </div>
     </div>
     <div id="arrayStage" class="array-stage"></div>

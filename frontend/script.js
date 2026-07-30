@@ -51,6 +51,7 @@ const errorBox = document.getElementById("errorBox");
 const listenBtn = document.getElementById("listenBtn");
 const listenText = document.getElementById("listenText");
 const narrateToggle = document.getElementById("narrateToggle");
+const narrateLangSelect = document.getElementById("narrateLangSelect");
 
 let currentQuestion = "";
 let currentSteps = [];
@@ -59,13 +60,56 @@ let autoplayTimer = null;
 
 // ---------- Text-to-speech (Web Speech API, free, browser built-in) ----------
 const synth = window.speechSynthesis;
+const translateGroup = document.getElementById("translateGroup");
+let cachedVoices = [];
 
-function speak(text, { onEnd } = {}) {
+function loadVoices() {
+  cachedVoices = synth ? synth.getVoices() : [];
+}
+if (synth) {
+  loadVoices();
+  synth.onvoiceschanged = loadVoices; // voices load async in some browsers
+}
+
+// Hinglish speech uses an Indian-English voice (en-IN) — pronounces Hindi
+// words mixed into English far more naturally than a US/UK voice would.
+// Pure Hindi text needs an actual Hindi voice (hi-IN) to read Devanagari correctly.
+function langCodeFor(mode) {
+  if (mode === "hinglish") return "en-IN";
+  if (mode === "hindi") return "hi-IN";
+  return "en-US";
+}
+
+function currentTranslateLang() {
+  const activeBtn = translateGroup?.querySelector(".translate-btn.active");
+  return activeBtn ? activeBtn.dataset.lang : "english";
+}
+
+function pickBestVoice(langCode) {
+  if (!cachedVoices.length) return null;
+  const candidates = cachedVoices.filter((v) => v.lang === langCode);
+  const pool = candidates.length ? candidates : cachedVoices.filter((v) => v.lang.startsWith(langCode.split("-")[0]));
+  if (!pool.length) return null;
+  // Prefer higher-quality "Natural"/"Online"/"Google" voices over the default
+  // robotic system voice — these sound calmer and far more professional.
+  const preferred = pool.find((v) => /natural|online|google/i.test(v.name));
+  return preferred || pool[0];
+}
+
+function speak(text, { onEnd, langMode } = {}) {
   if (!synth) return;
   synth.cancel(); // stop anything currently speaking
+  const mode = langMode || currentTranslateLang();
+  const lang = langCodeFor(mode);
   const utter = new SpeechSynthesisUtterance(text);
-  utter.rate = 1;
-  utter.pitch = 1;
+  utter.lang = lang;
+  const voice = pickBestVoice(lang);
+  if (voice) utter.voice = voice;
+  // Calm, professional delivery: slightly slower than default, slightly
+  // lower pitch — reads like a composed tutor rather than a rushed robot.
+  utter.rate = 0.88;
+  utter.pitch = 0.92;
+  utter.volume = 1;
   utter.onend = () => { if (onEnd) onEnd(); };
   synth.speak(utter);
 }
@@ -74,6 +118,55 @@ function stopSpeaking() {
   if (synth) synth.cancel();
   listenBtn?.classList.remove("speaking");
   if (listenText) listenText.textContent = "listen";
+}
+
+// ---------- Translate (EN / Hinglish / हिंदी) ----------
+// originalExplanationText always holds the source English text returned by
+// /api/explain; translationCache avoids re-calling the API for a language
+// the person has already switched to once.
+let originalExplanationText = "";
+let translationCache = {};
+
+function resetTranslationState(englishText) {
+  originalExplanationText = englishText;
+  translationCache = { english: englishText };
+  if (translateGroup) {
+    translateGroup.querySelectorAll(".translate-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.lang === "english");
+    });
+  }
+}
+
+if (translateGroup) {
+  translateGroup.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".translate-btn");
+    if (!btn || !originalExplanationText) return;
+    const target = btn.dataset.lang;
+
+    translateGroup.querySelectorAll(".translate-btn").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    stopSpeaking();
+
+    if (translationCache[target]) {
+      explanationText.textContent = translationCache[target];
+      return;
+    }
+
+    btn.classList.add("loading");
+    try {
+      const res = await callApi("/api/translate", {
+        text: originalExplanationText,
+        target,
+      });
+      translationCache[target] = res.text;
+      explanationText.textContent = res.text;
+    } catch (err) {
+      showError(err.message);
+      btn.classList.remove("active");
+    } finally {
+      btn.classList.remove("loading");
+    }
+  });
 }
 
 if (listenBtn) {
@@ -155,6 +248,7 @@ async function runTutor() {
     showLoader("understanding the question...");
     const explainRes = await callApi("/api/explain", { question });
     explanationText.textContent = explainRes.explanation;
+    resetTranslationState(explainRes.explanation);
     explainPanel.classList.remove("hidden");
     hideLoader();
 
@@ -202,6 +296,7 @@ async function runDryRun(approachName) {
     const trace = await callApi("/api/dry-run", {
       question: currentQuestion,
       approach: approachName,
+      narrate_language: narrateLangSelect ? narrateLangSelect.value : "english",
     });
     currentSteps = trace.steps || [];
     currentStepIndex = 0;
@@ -273,7 +368,7 @@ function renderStep() {
   stepCounter.textContent = `${currentStepIndex + 1} / ${currentSteps.length}`;
 
   if (narrateToggle && narrateToggle.checked && step.action) {
-    speak(step.action);
+    speak(step.action, { langMode: narrateLangSelect ? narrateLangSelect.value : "english" });
   }
 }
 

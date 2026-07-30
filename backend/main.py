@@ -83,17 +83,24 @@ def me(current_user: dict = Depends(auth.get_current_user)):
 
 class QuestionRequest(BaseModel):
     question: str
+    explain_language: Optional[str] = "english"  # "english" or "hinglish"
 
 
 class DryRunRequest(BaseModel):
     question: str
     approach: str
+    narrate_language: Optional[str] = "english"  # "english" or "hinglish"
 
 
 class RunCodeRequest(BaseModel):
     code: str
     language: str = "Python"
     stdin: Optional[str] = ""
+
+
+class TranslateRequest(BaseModel):
+    text: str
+    target: str = "english"  # "english", "hinglish", or "hindi"
 
 
 # ---------- Helper: call Groq & force clean JSON ----------
@@ -134,10 +141,22 @@ def health():
 
 @app.post("/api/explain")
 def explain_question(req: QuestionRequest, current_user: dict = Depends(auth.get_current_user)):
+    if req.explain_language == "hinglish":
+        language_instruction = (
+            "Respond in natural Hinglish (Hindi-English mix, written in Roman/English script "
+            "— NOT Devanagari), the way an Indian CS student casually explains things to a "
+            "friend. Keep technical terms (array, pointer, time complexity, etc.) in English "
+            "since that's how students actually say them; mix in Hindi for the explanatory "
+            "and connecting words. Keep it natural, not forced."
+        )
+    else:
+        language_instruction = "Respond in clear, simple English."
+
     system_prompt = (
         "You are a friendly DSA tutor for Indian CS students preparing for placements. "
         "Explain the given problem in simple language: what it's asking, a real-world "
         "analogy, and constraints/edge cases to watch for. Keep it under 150 words. "
+        f"{language_instruction} "
         "Respond in plain text, no markdown headers."
     )
     text = call_llm(system_prompt, req.question)
@@ -164,6 +183,17 @@ def get_approaches(req: QuestionRequest, current_user: dict = Depends(auth.get_c
 
 @app.post("/api/dry-run")
 def dry_run(req: DryRunRequest, current_user: dict = Depends(auth.get_current_user)):
+    if req.narrate_language == "hinglish":
+        action_language_instruction = (
+            "Write every 'action' description in natural Hinglish (Hindi-English mix, "
+            "Roman script — NOT Devanagari), the way an Indian CS student casually narrates "
+            "what's happening, e.g. 'ab hum 5 aur 2 ko compare kar rahe hain'. Keep technical "
+            "terms (array, pointer, index, swap, etc.) in English since that's how students "
+            "actually say them."
+        )
+    else:
+        action_language_instruction = "Write every 'action' description in clear, simple English."
+
     system_prompt = (
         "You are a DSA visualizer engine. Given a problem and a chosen approach, "
         "simulate the algorithm on a SMALL sample input (max 7 elements) and return "
@@ -185,7 +215,8 @@ def dry_run(req: DryRunRequest, current_user: dict = Depends(auth.get_current_us
         "— omit keys that don't apply. Keep steps between 5 and 15. "
         "If the algorithm is not array/index based (e.g. graph/tree), still represent "
         "its core data structure as a flat array of values with pointers as indices, "
-        "approximating the traversal order, so it stays visualizable as a linear sequence."
+        "approximating the traversal order, so it stays visualizable as a linear sequence. "
+        f"{action_language_instruction}"
     )
     user_prompt = f"Problem: {req.question}\nApproach to simulate: {req.approach}"
     raw = call_llm(system_prompt, user_prompt)
@@ -194,6 +225,33 @@ def dry_run(req: DryRunRequest, current_user: dict = Depends(auth.get_current_us
     except Exception:
         raise HTTPException(status_code=502, detail="LLM returned invalid JSON. Try again.")
     return trace
+
+
+@app.post("/api/translate")
+def translate_text(req: TranslateRequest, current_user: dict = Depends(auth.get_current_user)):
+    if req.target == "hinglish":
+        instruction = (
+            "Translate/rewrite the following text into natural Hinglish (Hindi-English mix, "
+            "Roman script — NOT Devanagari), the way an Indian CS student casually explains "
+            "things. Keep technical terms (array, pointer, complexity, etc.) in English; mix "
+            "Hindi for the connecting and explanatory words. Keep the same meaning and length."
+        )
+    elif req.target == "hindi":
+        instruction = (
+            "Translate the following text into clear, simple Hindi using Devanagari script. "
+            "You may keep well-established technical/programming terms (array, pointer, "
+            "complexity, function names, code snippets) in English/Roman script since that is "
+            "standard practice, but translate all explanatory sentences fully into Hindi."
+        )
+    else:
+        instruction = "Translate/rewrite the following text into clear, simple English."
+
+    system_prompt = (
+        f"{instruction} Return ONLY the translated text, no preamble, no quotes, "
+        "no markdown formatting."
+    )
+    translated = call_llm(system_prompt, req.text)
+    return {"text": translated}
 
 
 async def get_piston_version(language_id: str) -> str:

@@ -801,3 +801,45 @@ body {
   overflow-y: auto;
 }
 .output-block.output-error { color: var(--bad); border-color: rgba(248,113,113,0.35); }
+
+.listen-controls { display: flex; align-items: center; gap: 8px; }
+
+/* ================= Translate button group ================= */
+
+.translate-group {
+  display: flex;
+  background: var(--bar);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.translate-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.translate-btn:hover { color: var(--text); }
+.translate-btn.active {
+  background: var(--accent);
+  color: #06201c;
+  font-weight: 700;
+}
+.translate-btn.loading { opacity: 0.5; cursor: wait; }
+
+/* ================= CodeMirror integration (compiler page) ================= */
+
+.CodeMirror {
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.CodeMirror-focused { border-color: var(--accent); }
