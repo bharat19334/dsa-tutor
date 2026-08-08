@@ -1,13 +1,16 @@
 """
 DSA Visual Tutor - Backend
-FastAPI + Groq (LLaMA-3) powered API for:
-  1. /api/explain      -> plain-language explanation of a DSA question
-  2. /api/approaches   -> list of approaches (brute -> optimal) with complexity + reasoning
-  3. /api/dry-run      -> step-by-step JSON trace used by frontend to animate the array
+FastAPI + Groq (LLaMA-3 / GPT-OSS) powered API for:
+  1. /api/explain      -> plain-language explanation (English or Hinglish)
+  2. /api/approaches   -> ranked solution approaches with complexity + reasoning
+  3. /api/dry-run      -> step-by-step JSON trace (array OR tree/graph shape) for animation
+  4. /api/translate    -> translate already-shown content into English / Hinglish / Hindi
+  5. /api/run-code     -> execute user code via the sandboxed Piston API
+  6. /api/auth/*        -> signup / login / current user
 
 Run:
   pip install -r requirements.txt
-  cp .env.example .env   # then paste your GROQ_API_KEY
+  cp .env.example .env   # then paste your GROQ_API_KEY, JWT_SECRET
   uvicorn main:app --reload
 """
 
@@ -39,7 +42,12 @@ LANGUAGE_MAP = {
     "Java": "java",
     "JavaScript": "javascript",
 }
-FILE_EXTENSIONS = {"python": "main.py", "cpp": "main.cpp", "java": "Main.java", "javascript": "main.js"}
+FILE_EXTENSIONS = {
+    "python": "main.py",
+    "cpp": "main.cpp",
+    "java": "Main.java",
+    "javascript": "main.js",
+}
 _piston_runtime_cache: dict = {}
 
 app = FastAPI(title="DSA Visual Tutor API")
@@ -125,7 +133,6 @@ def call_llm(system_prompt: str, user_prompt: str) -> str:
 def extract_json(raw_text: str):
     """LLMs sometimes wrap JSON in ```json fences or add stray text. Strip it."""
     cleaned = re.sub(r"```json|```", "", raw_text).strip()
-    # grab the outermost {...} or [...] block as a fallback
     match = re.search(r"(\{.*\}|\[.*\])", cleaned, re.DOTALL)
     if match:
         cleaned = match.group(1)
@@ -187,36 +194,63 @@ def dry_run(req: DryRunRequest, current_user: dict = Depends(auth.get_current_us
         action_language_instruction = (
             "Write every 'action' description in natural Hinglish (Hindi-English mix, "
             "Roman script — NOT Devanagari), the way an Indian CS student casually narrates "
-            "what's happening, e.g. 'ab hum 5 aur 2 ko compare kar rahe hain'. Keep technical "
-            "terms (array, pointer, index, swap, etc.) in English since that's how students "
-            "actually say them."
+            "what's happening. Keep technical terms (pointer, node, index, visited, etc.) in "
+            "English since that's how students actually say them."
         )
     else:
-        action_language_instruction = "Write every 'action' description in clear, simple English."
+        action_language_instruction = "Write every 'action' description in clear, proper English."
 
     system_prompt = (
-        "You are a DSA visualizer engine. Given a problem and a chosen approach, "
-        "simulate the algorithm on a SMALL sample input (max 7 elements) and return "
-        "ONLY valid JSON (no markdown, no commentary) in this exact shape:\n"
+        "You are a DSA visualizer engine for a student-facing learning tool. Given a problem "
+        "and a chosen approach, simulate the algorithm on a SMALL sample input and return "
+        "ONLY valid JSON (no markdown, no commentary, no code fences).\n\n"
+        "STEP 1 — Decide the structure_type:\n"
+        "- \"array\" for array/string/two-pointer/sliding-window/sorting/searching problems.\n"
+        "- \"tree\" for binary tree / BST problems.\n"
+        "- \"graph\" for graph traversal / shortest-path / connectivity problems.\n\n"
+        "STEP 2 — Return JSON in ONE of these two shapes, matching structure_type:\n\n"
+        "=== SHAPE A (structure_type = \"array\") ===\n"
         "{\n"
+        '  "structure_type": "array",\n'
         '  "input": [ ... ],\n'
         '  "steps": [\n'
         "    {\n"
-        '      "array": [ ... current state of the array ... ],\n'
-        '      "highlight": [ indices being compared/touched this step ],\n'
+        '      "array": [ ... state AFTER this step\'s change, if any ... ],\n'
+        '      "highlight": [ indices touched this step ],\n'
         '      "pointers": { "i": 0, "j": 1 },\n'
-        '      "action": "short human-readable description of this step",\n'
+        '      "action": "2-3 full sentences explaining, in proper student-friendly language: '
+        'which pointer(s) are involved, what values they are looking at right now, what '
+        'comparison or operation is happening, WHY it happens, and how the pointer(s) will '
+        'move next. This should read like a tutor narrating the algorithm, not a terse log line.",\n'
         '      "swapped": false\n'
         "    }\n"
         "  ]\n"
-        "}\n"
-        "Rules: 'array' must reflect the state AFTER any change in that step. "
-        "'pointers' can have any relevant named keys (i, j, low, high, mid, left, right etc) "
-        "— omit keys that don't apply. Keep steps between 5 and 15. "
-        "If the algorithm is not array/index based (e.g. graph/tree), still represent "
-        "its core data structure as a flat array of values with pointers as indices, "
-        "approximating the traversal order, so it stays visualizable as a linear sequence. "
-        f"{action_language_instruction}"
+        "}\n\n"
+        "=== SHAPE B (structure_type = \"tree\" or \"graph\") ===\n"
+        "{\n"
+        '  "structure_type": "tree" | "graph",\n'
+        '  "nodes": [ { "id": "A", "value": 5, "x": 0-700, "y": 0-320 } ... up to 10 nodes, '
+        "laid out with sensible non-overlapping coordinates — a top-down hierarchy for trees, "
+        "a roughly circular/force-like spread for graphs ],\n"
+        '  "edges": [ { "from": "A", "to": "B" } ... ],\n'
+        '  "steps": [\n'
+        "    {\n"
+        '      "current": "A",\n'
+        '      "visited": [ "A", "B" ],\n'
+        '      "frontier": [ "C", "D" ],\n'
+        '      "active_edge": { "from": "A", "to": "B" } | null,\n'
+        '      "pointers": { "queue_front": "C" },\n'
+        '      "action": "2-3 full sentences explaining what node is being visited, why it was '
+        'chosen next (e.g. from the front of the queue / top of the stack / smallest distance), '
+        'what its neighbours are, and what happens as a result — written like a tutor narrating, '
+        'not a terse log line."\n'
+        "    }\n"
+        "  ]\n"
+        "}\n\n"
+        "General rules: keep steps between 5 and 15. Use a small sample (max 7 array elements, "
+        "or max 10 tree/graph nodes) so it stays easy to follow. "
+        f"{action_language_instruction} "
+        "Pick exactly one shape based on structure_type and do not mix fields from the other shape."
     )
     user_prompt = f"Problem: {req.question}\nApproach to simulate: {req.approach}"
     raw = call_llm(system_prompt, user_prompt)
@@ -254,14 +288,20 @@ def translate_text(req: TranslateRequest, current_user: dict = Depends(auth.get_
     return {"text": translated}
 
 
+# ---------- Compiler (Piston API) ----------
+
 async def get_piston_version(language_id: str) -> str:
     """Piston needs an exact runtime version per language; fetch + cache it."""
     if language_id in _piston_runtime_cache:
         return _piston_runtime_cache[language_id]
-    async with httpx.AsyncClient(timeout=10) as http_client:
-        res = await http_client.get(f"{PISTON_URL}/runtimes")
-        res.raise_for_status()
-        runtimes = res.json()
+    try:
+        async with httpx.AsyncClient(timeout=15) as http_client:
+            res = await http_client.get(f"{PISTON_URL}/runtimes")
+            res.raise_for_status()
+            runtimes = res.json()
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail=f"Could not reach code execution service: {e}")
+
     for rt in runtimes:
         if rt["language"] == language_id:
             _piston_runtime_cache[language_id] = rt["version"]
@@ -280,10 +320,18 @@ async def run_code(req: RunCodeRequest, current_user: dict = Depends(auth.get_cu
         "files": [{"name": FILE_EXTENSIONS.get(language_id, "main.txt"), "content": req.code}],
         "stdin": req.stdin or "",
     }
-    async with httpx.AsyncClient(timeout=20) as http_client:
-        res = await http_client.post(f"{PISTON_URL}/execute", json=payload)
+
+    try:
+        async with httpx.AsyncClient(timeout=25) as http_client:
+            res = await http_client.post(f"{PISTON_URL}/execute", json=payload)
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail=f"Could not reach code execution service: {e}")
+
     if res.status_code != 200:
-        raise HTTPException(status_code=502, detail="Code execution service error. Try again.")
+        raise HTTPException(
+            status_code=502,
+            detail=f"Code execution service returned {res.status_code}: {res.text[:300]}",
+        )
 
     result = res.json()
     run = result.get("run", {})
