@@ -1,6 +1,7 @@
 # DSA Visual Tutor
 
 Live : ```https://dsa-tutor-woad.vercel.app/```
+
 A DSA (Data Structures & Algorithms) learning tool with:
 - FastAPI backend powered by Groq (LLaMA-3 / GPT-OSS) for explanations, approach comparisons, and step-by-step dry-runs.
 - Vanilla JS/HTML/CSS frontend with login/signup (JWT-based auth).
